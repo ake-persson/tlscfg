@@ -35,7 +35,7 @@ type tlsCfg struct {
 	key      string
 	ca       string
 	insecure bool
-	config   tls.Config
+	config   *tls.Config
 }
 
 // New constructor.
@@ -50,7 +50,7 @@ func New(o *Options) TLSCfg {
 
 // Init TLS config.
 func (t *tlsCfg) Init() error {
-	t.config = tls.Config{
+	c := tls.Config{
 		InsecureSkipVerify: t.insecure,
 	}
 
@@ -60,7 +60,7 @@ func (t *tlsCfg) Init() error {
 			return err
 		}
 
-		t.config.Certificates = []tls.Certificate{cert}
+		c.Certificates = []tls.Certificate{cert}
 	}
 
 	if t.ca != "" {
@@ -69,14 +69,16 @@ func (t *tlsCfg) Init() error {
 			return err
 		}
 
-		t.config.RootCAs = x509.NewCertPool()
-		t.config.RootCAs.AppendCertsFromPEM(ca)
+		c.RootCAs = x509.NewCertPool()
+		c.RootCAs.AppendCertsFromPEM(ca)
 	}
+
+	t.config = &c
 
 	return nil
 }
 
 // Config returns TLS config
 func (t *tlsCfg) Config() *tls.Config {
-	return &t.config
+	return t.config
 }
