@@ -40,10 +40,11 @@ Options structure.
 ## type TLSCfg
 ``` go
 type TLSCfg interface {
-    Config() (*tls.Config, error)
+    Init() error
+    Config() *tls.Config
 }
 ```
-FetchURI interface.
+TLSCfg interface.
 
 
 

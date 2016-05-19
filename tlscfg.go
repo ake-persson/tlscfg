@@ -24,9 +24,10 @@ type Options struct {
 	Insecure bool
 }
 
-// FetchURI interface.
+// TLSCfg interface.
 type TLSCfg interface {
-	Config() (*tls.Config, error)
+	Init() error
+	Config() *tls.Config
 }
 
 type tlsCfg struct {
@@ -34,6 +35,7 @@ type tlsCfg struct {
 	key      string
 	ca       string
 	insecure bool
+	config   tls.Config
 }
 
 // New constructor.
@@ -46,30 +48,35 @@ func New(o *Options) TLSCfg {
 	}
 }
 
-// Config returns a tls config.
-func (t *tlsCfg) Config() (*tls.Config, error) {
-	c := tls.Config{
+// Init TLS config.
+func (t *tlsCfg) Init() error {
+	t.config = tls.Config{
 		InsecureSkipVerify: t.insecure,
 	}
 
 	if t.cert != "" && t.key != "" {
 		cert, err := tls.LoadX509KeyPair(t.cert, t.key)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
-		c.Certificates = []tls.Certificate{cert}
+		t.config.Certificates = []tls.Certificate{cert}
 	}
 
 	if t.ca != "" {
 		ca, err := ioutil.ReadFile(t.ca)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
-		c.RootCAs = x509.NewCertPool()
-		c.RootCAs.AppendCertsFromPEM(ca)
+		t.config.RootCAs = x509.NewCertPool()
+		t.config.RootCAs.AppendCertsFromPEM(ca)
 	}
 
-	return &c, nil
+	return nil
+}
+
+// Config returns TLS config
+func (t *tlsCfg) Config() *tls.Config {
+	return &t.config
 }
