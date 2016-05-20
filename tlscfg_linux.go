@@ -1,5 +1,5 @@
 package tlscfg
 
-func (t *tlsCfg) appendSystemCerts() error {
+func appendSystemCerts() error {
 	return nil
 }
