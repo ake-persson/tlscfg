@@ -6,9 +6,6 @@ import (
 	"io/ioutil"
 )
 
-// TODO
-// Add default system CA Certs on Linux and Mac OS X
-
 // Options structure.
 type Options struct {
 	// TLS certificate file (Optional).
@@ -63,13 +60,17 @@ func (t *tlsCfg) Init() error {
 		c.Certificates = []tls.Certificate{cert}
 	}
 
+	c.RootCAs = x509.NewCertPool()
+	if err := appendSystemCerts(&c); err != nil {
+		return err
+	}
+
 	if t.ca != "" {
 		ca, err := ioutil.ReadFile(t.ca)
 		if err != nil {
 			return err
 		}
 
-		c.RootCAs = x509.NewCertPool()
 		c.RootCAs.AppendCertsFromPEM(ca)
 	}
 
