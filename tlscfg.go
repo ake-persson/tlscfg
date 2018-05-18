@@ -19,6 +19,9 @@ type Options struct {
 
 	// TLS insecure (Optional).
 	Insecure bool
+
+	// TLS server name (Optional).
+	ServerName string
 }
 
 // TLSCfg interface.
@@ -28,20 +31,22 @@ type TLSCfg interface {
 }
 
 type tlsCfg struct {
-	cert     string
-	key      string
-	ca       string
-	insecure bool
-	config   *tls.Config
+	cert       string
+	key        string
+	ca         string
+	insecure   bool
+	serverName string
+	config     *tls.Config
 }
 
 // New constructor.
 func New(o *Options) TLSCfg {
 	return &tlsCfg{
-		cert:     o.Cert,
-		key:      o.Key,
-		ca:       o.CA,
-		insecure: o.Insecure,
+		cert:       o.Cert,
+		key:        o.Key,
+		ca:         o.CA,
+		insecure:   o.Insecure,
+		serverName: o.ServerName,
 	}
 }
 
@@ -49,6 +54,7 @@ func New(o *Options) TLSCfg {
 func (t *tlsCfg) Init() error {
 	c := tls.Config{
 		InsecureSkipVerify: t.insecure,
+		ServerName:         t.serverName,
 	}
 
 	if t.cert != "" && t.key != "" {
